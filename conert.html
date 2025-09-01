@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currency Converter</title>
+  <style>
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      background: linear-gradient(135deg, #0a1f44, #0e3a70, #145da0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      color: #f5f5f5;
+    }
+
+    .converter {
+      background: rgba(20, 40, 80, 0.95);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0px 6px 25px rgba(0,0,0,0.6);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .converter:hover {
+      transform: scale(1.02);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    select, input {
+      margin: 10px 0;
+      padding: 14px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      background: #1d3557;
+      color: #f1f1f1;
+      transition: 0.3s;
+    }
+
+    select:focus, input:focus {
+      background: #27496d;
+      box-shadow: 0 0 8px rgba(20,120,255,0.7);
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #ffffff;
+      background: #112b46;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #cfd8dc;
+    }
+  </style>
+</head>
+<body>
+  <div class="converter">
+    <h2>Currency Converter</h2>
+    <input type="number" id="amount" placeholder="Enter amount" />
+
+    <select id="fromCurrency"></select>
+    <select id="toCurrency"></select>
+
+    <div class="result" id="result">Enter amount & choose currencies</div>
+  </div>
+
+  <script>
+    const apiUrl = "https://api.frankfurter.app/latest";
+
+    const currencyNames = {
+      "USD": "United States Dollar",
+      "EUR": "Euro",
+      "INR": "Indian Rupee",
+      "GBP": "British Pound Sterling",
+      "JPY": "Japanese Yen",
+      "AUD": "Australian Dollar",
+      "CAD": "Canadian Dollar",
+      "CHF": "Swiss Franc",
+      "CNY": "Chinese Yuan",
+      "NZD": "New Zealand Dollar",
+      "SGD": "Singapore Dollar",
+      "HKD": "Hong Kong Dollar",
+      "KRW": "South Korean Won",
+      "ZAR": "South African Rand",
+      "BRL": "Brazilian Real",
+      "RUB": "Russian Ruble",
+      "MXN": "Mexican Peso",
+      "AED": "UAE Dirham",
+      "SAR": "Saudi Riyal",
+      "TRY": "Turkish Lira",
+      "SEK": "Swedish Krona",
+      "NOK": "Norwegian Krone",
+      "DKK": "Danish Krone",
+      "PLN": "Polish Zloty",
+      "CZK": "Czech Koruna",
+      "HUF": "Hungarian Forint",
+      "THB": "Thai Baht",
+      "IDR": "Indonesian Rupiah",
+      "MYR": "Malaysian Ringgit",
+      "PHP": "Philippine Peso",
+      "VND": "Vietnamese Dong",
+      "EGP": "Egyptian Pound",
+      "NGN": "Nigerian Naira",
+      "ARS": "Argentine Peso",
+      "CLP": "Chilean Peso",
+      "COP": "Colombian Peso",
+      "ILS": "Israeli Shekel",
+      "PKR": "Pakistani Rupee",
+      "BDT": "Bangladeshi Taka",
+      "KWD": "Kuwaiti Dinar",
+      "QAR": "Qatari Riyal"
+    };
+
+    async function loadCurrencies() {
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      const currencies = Object.keys(data.rates);
+      currencies.push("EUR");
+
+      const fromSelect = document.getElementById("fromCurrency");
+      const toSelect = document.getElementById("toCurrency");
+
+      currencies.sort().forEach(currency => {
+        if (currencyNames[currency]) {
+          let option1 = document.createElement("option");
+          option1.value = currency;
+          option1.text = `${currency} – ${currencyNames[currency]}`;
+          fromSelect.appendChild(option1);
+
+          let option2 = document.createElement("option");
+          option2.value = currency;
+          option2.text = `${currency} – ${currencyNames[currency]}`;
+          toSelect.appendChild(option2);
+        }
+      });
+
+      fromSelect.value = "USD";
+      toSelect.value = "INR";
+    }
+
+    async function convertCurrency() {
+      const amount = document.getElementById("amount").value;
+      const fromCurrency = document.getElementById("fromCurrency").value;
+      const toCurrency = document.getElementById("toCurrency").value;
+
+      if (amount === "" || isNaN(amount)) {
+        document.getElementById("result").innerText = "⚠️ Please enter a valid amount.";
+        return;
+      }
+      if (fromCurrency === toCurrency) {
+        document.getElementById("result").innerText = "⚠️ Same currency selected.";
+        return;
+      }
+
+      const res = await fetch(`${apiUrl}?amount=${amount}&from=${fromCurrency}&to=${toCurrency}`);
+      const data = await res.json();
+      document.getElementById("result").innerText =
+        `${amount} ${fromCurrency} (${currencyNames[fromCurrency]}) = ${data.rates[toCurrency]} ${toCurrency} (${currencyNames[toCurrency]})`;
+    }
+
+    document.getElementById("amount").addEventListener("input", convertCurrency);
+    document.getElementById("fromCurrency").addEventListener("change", convertCurrency);
+    document.getElementById("toCurrency").addEventListener("change", convertCurrency);
+
+    loadCurrencies();
+  </script>
+</body>
+</html>
